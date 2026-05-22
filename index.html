@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>May and Jay</title>
+    <style>
+        :root {
+            --bg: #141414;
+            --text: #e5e5e5;
+            --text-muted: #b3b3b3;
+            --accent: #e50914;
+            --card-bg: #1f1f1f;
+            --navbar-bg: rgba(20, 20, 20, 0.95);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --star-full: #ffd700;
+            --star-empty: #555;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 3px;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 16px 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.4s ease, padding 0.4s ease;
+            background-color: transparent;
+        }
+        .navbar.scrolled {
+            background-color: var(--navbar-bg);
+            padding: 10px 60px;
+            backdrop-filter: blur(10px);
+        }
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 36px;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            color: #e50914;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 24px;
+        }
+        .nav-links li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+        .nav-links li a:hover,
+        .nav-links li a.active {
+            color: #fff;
+        }
+        .nav-links li a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 1px;
+        }
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 24px;
+            padding: 8px 16px;
+            gap: 8px;
+            transition: border-color var(--transition);
+        }
+        .search-box:focus-within {
+            border-color: #fff;
+        }
+        .search-box input {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 0.9rem;
+            outline: none;
+            width: 160px;
+            transition: width 0.3s ease;
+        }
+        .search-box input:focus {
+            width: 220px;
+        }
+        .search-icon {
+            font-size: 1rem;
+            color: #999;
+        }
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #e50914, #b20710);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .hero {
+            position: relative;
+            height: 85vh;
+            min-height: 550px;
+            display: flex;
+            align-items: flex-end;
+            padding: 0 60px 80px;
+            background: linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(20,20,20,0.35) 40%, rgba(20,20,20,0.85) 75%, #141414 100%),
+                        linear-gradient(90deg, rgba(20,20,20,0.7) 0%, rgba(20,20,20,0.2) 50%, rgba(20,20,20,0.1) 100%),
+                        url('https://media.gq.com/photos/69b98139fb272bde94e6408f/16:9/w_2560%2Cc_limit/DUN3-T1-0050rv3%2520copy.jpg') center/cover no-repeat;
+            transition: background-image 0.6s ease;
+        }
+        .hero-content {
+            max-width: 580px;
+            z-index: 2;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hero-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .badge-movie { background: #e50914; }
+        .badge-series { background: #564dff; }
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+        }
+        .hero-meta {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        .hero-stars {
+            color: var(--star-full);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+        .hero-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #ccc;
+            margin-bottom: 24px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .btn {
+            padding: 12px 28px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-play { background: #fff; color: #000; }
+        .btn-play:hover { background: #ddd; }
+        .hero-fade-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(transparent, #141414);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .main-content {
+            margin-top: -60px;
+            position: relative;
+            z-index: 5;
+            padding-bottom: 60px;
+        }
+        .category-section {
+            margin-bottom: 40px;
+            padding: 0 60px;
+        }
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .category-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #e5e5e5;
+            cursor: pointer;
+        }
+        .category-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 10px 0 20px;
+            scroll-behavior: smooth;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .category-row::-webkit-scrollbar { display: none; }
+
+        .card {
+            flex: 0 0 auto;
+            width: 210px;
+            border-radius: 6px;
+            overflow: hidden;
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: box-shadow 0.35s ease;
+            position: relative;
+            z-index: 1;
+        }
+        .card:hover {
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+        .card-poster-wrapper {
+            overflow: hidden;
+            border-radius: 6px 6px 0 0;
+            line-height: 0;
+        }
+        .card-poster {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            display: block;
+            background: #2a2a2a;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card:hover .card-poster {
+            transform: scale(1.15);
+        }
+        .card-info {
+            padding: 10px 12px 14px;
+            background: #1a1a1a;
+            border-radius: 0 0 6px 6px;
+            opacity: 1;
+        }
+        .card-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .card-stars {
+            color: var(--star-full);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+        .card-meta {
+            font-size: 0.7rem;
+            color: #999;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        .card-type-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            background: rgba(0,0,0,0.7);
+            z-index: 10;
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+        .card:hover .card-type-badge { opacity: 1; }
+        .schedule-badge {
+            display: inline-block;
+            background: #2a2a2a;
+            color: #54b9c5;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-top: 4px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .modal {
+            background: #1a1a1a;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 750px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            position: relative;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.7);
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-close:hover { background: var(--accent); }
+        .modal-poster {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            border-radius: 12px 12px 0 0;
+            background: #2a2a2a;
+        }
+        .modal-body { padding: 24px 30px 30px; }
+        .modal-title { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+        .modal-meta {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 0.9rem;
+            color: #bbb;
+            flex-wrap: wrap;
+        }
+        .modal-stars {
+            color: var(--star-full);
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+        }
+        .modal-description { color: #ccc; line-height: 1.7; margin-bottom: 20px; }
+        .watched-users {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .watched-user {
+            background: #2a2a2a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: #ddd;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .watched-user .user-name {
+            font-weight: 600;
+            min-width: 60px;
+        }
+        .watched-user .user-stars {
+            color: var(--star-full);
+        }
+        .watched-user .user-comment {
+            font-style: italic;
+            color: #aaa;
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 12px 20px; }
+            .hero { height: 65vh; padding: 0 20px 60px; }
+            .hero-title { font-size: 2rem; }
+            .category-section { padding: 0 20px; }
+            .card { width: 150px; }
+            .modal { width: 95%; }
+            .modal-poster { height: 220px; }
+            .modal-title { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="navbar-left">
+            <span class="logo" onclick="location.reload()">May & Jay</span>
+            <ul class="nav-links">
+                <li><a class="active" data-filter="all" onclick="filterContent('all', this)">Home</a></li>
+                <li><a data-filter="movie" onclick="filterContent('movie', this)">Movies</a></li>
+                <li><a data-filter="series" onclick="filterContent('series', this)">Series</a></li>
+                <li><a data-filter="watchlist" onclick="filterContent('watchlist', this)">Watchlist</a></li>
+                <li><a data-filter="alreadyWatched" onclick="filterContent('alreadyWatched', this)">Already Watched</a></li>
+            </ul>
+        </div>
+        <div class="navbar-right">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search titles..." oninput="handleSearch()">
+            </div>
+            <div class="avatar">U</div>
+        </div>
+    </nav>
+
+    <section class="hero" id="hero">
+        <div class="hero-content" id="heroContent">
+            <span class="hero-badge badge-movie" id="heroBadge">MOVIE</span>
+            <h1 class="hero-title" id="heroTitle">Dune: Part Three</h1>
+            <div class="hero-meta">
+                <span class="hero-stars" id="heroStars">★★★★★</span>
+                <span class="year" id="heroYear">2026</span>
+                <span id="heroDuration">2h 46m</span>
+            </div>
+            <p class="hero-description" id="heroDescription">Emperor Paul Atreides faces the fallout from his ascent to power as political plots and a galaxy-wide holy war endanger the future only he can see.</p>
+        </div>
+        <div class="hero-fade-bottom"></div>
+    </section>
+
+    <div class="main-content" id="mainContent"></div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" id="modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <img class="modal-poster" id="modalPoster" src="" alt="">
+            <div class="modal-body">
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <div class="modal-meta">
+                    <span class="modal-stars" id="modalStars">★★★★★</span>
+                    <span id="modalYear"></span>
+                    <span id="modalDuration"></span>
+                    <span id="modalType"></span>
+                    <span id="modalDay" style="color:#54b9c5;"></span>
+                </div>
+                <p class="modal-description" id="modalDescription"></p>
+                <div id="watchedUsers" class="watched-users"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const allItems = [
+            { id: 1, title: 'Dune: Part Three', type: 'movie', category: 'Sci-Fi', year: 2026, duration: '2h 46m', poster: 'https://m.media-amazon.com/images/M/MV5BMDA2MDVmNWItODA3My00Mzc2LThmODMtMThhYTVlMGJkYjA4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg', banner: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5yyrEU3cBZ-ArACbiTlvczxmZLXtZXmVDrhRhiKIKhEkjtv7512a8-CLk5KVNk0Ko6CTytf3QXdfjNTAikSugKgSgUGvDh-yjZB7EI_s&s', description: 'Emperor Paul Atreides faces the fallout from his ascent to power as political plots and a galaxy-wide holy war endanger the future only he can see.', day: '', 
+                watched: { may: { rating: 9.0, comment: 'A true masterpiece' }, jay: { rating: 8.5, comment: 'Visually stunning' } } },
+            { id: 2, title: 'The Garden of Words', type: 'movie', category: 'Anime', year: 2013, duration: '46m', poster: 'https://m.media-amazon.com/images/M/MV5BYjdiMDdlMDItOGM4Ny00YmE4LTk0MTEtMGRhM2Y4OWZkZDZkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg', banner: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHYOkcHIdRfXjfYyBEuzkSdL8Lr0Ist0xb4g&s', description: 'On a rainy morning in Tokyo, 15-year-old Takao, an aspiring shoemaker, decides to skip class to sketch designs in a beautiful garden.', day: '',
+                watched: null },
+            { id: 3, title: '5 Centimeters per Second', type: 'movie', category: 'Anime', year: 2007, duration: '1h 3m', poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQ2qjimhfz6MrDqMojN810TpZLnyYXcYsl2acA_fv_GCkyczoZQ_aq2McGaYgHjPqXSv08RRsktt3oRItB0BO5yCz9D1-BoxuhIyXbl2DDIw&s=10', banner: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCVkpxvVllEul1tfD-Y5j29oEvL9abYQylMIiF_JV5Mg&s=10', description: 'Told in three interconnected segments, Takaki tells the story of his life as cruel winters, cold technology, and finally, adult obligations and responsibility converge to test the delicate petals of love.', day: 'May 30',
+                watched: null },
+
+        ];
+    
+// //           { id: 3, title: 'Oppenheimer', type: 'movie', category: 'Drama', year: 2023, duration: '3h 0m', poster: 'https://picsum.photos/seed/oppen/400/600', banner: 'https://picsum.photos/seed/oppen-banner/1920/1080', description: 'The story of J. Robert Oppenheimer.', day: 'Wednesday', watched: null },
+//           { id: 4, title: 'Spider-Verse 2', type: 'movie', category: 'Animation', year: 2023, duration: '2h 20m', poster: 'https://picsum.photos/seed/spiderverse/400/600', banner: 'https://picsum.photos/seed/spider-banner/1920/1080', description: 'Miles Morales journeys across the Multiverse.', day: '', watched: { may: { rating: 9.2, comment: 'Best animation ever' }, jay: { rating: 8.9, comment: 'So creative' } } },
+//         { id: 5, title: 'John Wick 4', type: 'movie', category: 'Action', year: 2023, duration: '2h 49m', poster: 'https://picsum.photos/seed/johnwick4/400/600', banner: 'https://picsum.photos/seed/jw-banner/1920/1080', description: 'John Wick faces a new enemy.', day: 'Thursday', watched: { may: { rating: 7.0, comment: 'Great action' } } },
+//       { id: 6, title: 'The Creator', type: 'movie', category: 'Sci-Fi', year: 2023, duration: '2h 13m', poster: 'https://picsum.photos/seed/creator23/400/600', banner: 'https://picsum.photos/seed/creator-banner/1920/1080', description: 'A war between humanity and AI.', day: 'Friday', watched: { jay: { rating: 6.8, comment: 'Cool visuals' } } },
+//     { id: 7, title: 'A Quiet Place II', type: 'movie', category: 'Horror', year: 2021, duration: '1h 37m', poster: 'https://picsum.photos/seed/quietplace/400/600', banner: 'https://picsum.photos/seed/quiet-banner/1920/1080', description: 'The Abbott family faces terrors outside.', day: 'Saturday', watched: { may: { rating: 8.1, comment: 'So tense' }, jay: { rating: 7.9, comment: 'Good sequel' } } },
+         //   { id: 8, title: 'Everything Everywhere', type: 'movie', category: 'Comedy', year: 2022, duration: '2h 19m', poster: 'https://picsum.photos/seed/everywhere/400/600', banner: 'https://picsum.photos/seed/ee-banner/1920/1080', description: 'An aging immigrant must save the world.', day: '', watched: null },
+           // { id: 9, title: 'Stranger Things', type: 'series', category: 'Horror', year: 2022, duration: '4 Seasons', poster: 'https://picsum.photos/seed/stranger/400/600', banner: 'https://picsum.photos/seed/stranger-banner/1920/1080', description: 'A small town uncovers a mystery.', day: 'Sunday', watched: { may: { rating: 9.0, comment: 'Nostalgic & scary' }, jay: { rating: 8.8, comment: 'Love the kids' } } },
+//            { id: 10, title: 'The Last of Us', type: 'series', category: 'Drama', year: 2023, duration: '1 Season', poster: 'https://picsum.photos/seed/lastofus/400/600', banner: 'https://picsum.photos/seed/tlou-banner/1920/1080', description: 'Joel and Ellie cross a post-pandemic America.', day: 'Monday', watched: { may: { rating: 9.5, comment: 'Perfect adaptation' }, jay: { rating: 9.2, comment: 'Emotional' } } },
+//            { id: 11, title: 'Wednesday', type: 'series', category: 'Comedy', year: 2022, duration: '1 Season', poster: 'https://picsum.photos/seed/wednesday/400/600', banner: 'https://picsum.photos/seed/wed-banner/1920/1080', description: 'Wednesday Addams solves a mystery.', day: 'Tuesday', watched: { jay: { rating: 7.8, comment: 'Quirky fun' } } },
+//            { id: 12, title: 'The Mandalorian', type: 'series', category: 'Sci-Fi', year: 2023, duration: '3 Seasons', poster: 'https://picsum.photos/seed/mando/400/600', banner: 'https://picsum.photos/seed/mando-banner/1920/1080', description: 'A lone bounty hunter travels the galaxy.', day: 'Wednesday', watched: { may: { rating: 8.7, comment: 'Baby Yoda!' }, jay: { rating: 8.4, comment: 'Great world-building' } } },
+//            { id: 13, title: 'Breaking Bad', type: 'series', category: 'Drama', year: 2013, duration: '5 Seasons', poster: 'https://picsum.photos/seed/breakingbad/400/600', banner: 'https://picsum.photos/seed/bb-banner/1920/1080', description: 'A chemistry teacher turns to crime.', day: 'Thursday', watched: { may: { rating: 9.8, comment: 'Absolute genius' }, jay: { rating: 9.7, comment: 'Best show ever' } } },
+//            { id: 14, title: 'Arcane', type: 'series', category: 'Animation', year: 2021, duration: '1 Season', poster: 'https://picsum.photos/seed/arcane/400/600', banner: 'https://picsum.photos/seed/arcane-banner/1920/1080', description: 'Two sisters fight on rival sides of a war.', day: 'Friday', watched: null },
+//            { id: 15, title: 'House of the Dragon', type: 'series', category: 'Action', year: 2022, duration: '1 Season', poster: 'https://picsum.photos/seed/hotd/400/600', banner: 'https://picsum.photos/seed/hotd-banner/1920/1080', description: 'Targaryen civil war.', day: 'Saturday', watched: { may: { rating: 8.2, comment: 'Epic return to Westeros' }, jay: { rating: 8.0, comment: 'Slow start' } } },
+//            { id: 16, title: 'Squid Game', type: 'series', category: 'Horror', year: 2021, duration: '1 Season', poster: 'https://picsum.photos/seed/squidgame/400/600', banner: 'https://picsum.photos/seed/squid-banner/1920/1080', description: 'Deadly children\'s games.', day: '', watched: { may: { rating: 7.5, comment: 'Intense' } } },
+
+    
+    
+    
+    
+    
+        const categoryOrder = ['Trending Now', 'Action', 'Sci-Fi', 'Drama', 'Horror', 'Comedy', 'Anime'];
+        const daysOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+        let currentFilter = 'all';
+        let currentHeroItem = allItems[0];
+        let currentModalItem = null;
+
+        function getAverageRating(item) {
+            const allRatings = [];
+            if (item.watched) {
+                if (item.watched.may) allRatings.push(item.watched.may.rating);
+                if (item.watched.jay) allRatings.push(item.watched.jay.rating);
+            }
+            if (allRatings.length > 0) {
+                const avg = allRatings.reduce((a,b)=>a+b,0) / allRatings.length;
+                return Math.round(avg * 2) / 2;
+            }
+            return 0;
+        }
+
+        function ratingToStars(rating) {
+            const full = Math.floor(rating / 2);
+            const half = rating % 2 >= 0.5 ? 1 : 0;
+            const empty = 5 - full - half;
+            return '★'.repeat(full) + (half ? '½' : '') + (empty > 0 ? '☆'.repeat(empty) : '');
+        }
+
+        function init() {
+            updateHeroItem(allItems[0]);
+            renderAllCategories();
+            window.addEventListener('scroll', () => {
+                document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+            });
+        }
+
+        function renderAllCategories() {
+            const container = document.getElementById('mainContent');
+            container.innerHTML = '';
+
+            if (currentFilter === 'watchlist') {
+                // Group all items by their hardcoded day
+                const dayMap = {};
+                daysOrder.forEach(d => dayMap[d] = []);
+                const unscheduled = [];
+                allItems.forEach(item => {
+                    if (item.day && daysOrder.includes(item.day)) dayMap[item.day].push(item);
+                    else unscheduled.push(item);
+                });
+                let html = '';
+                daysOrder.forEach(day => { if (dayMap[day].length) html += renderCategoryHTML(`📅 ${day}`, dayMap[day], true); });
+                if (unscheduled.length) html += renderCategoryHTML('Unscheduled', unscheduled, false);
+                container.innerHTML = html || '<div class="category-section" style="text-align:center; padding:80px 20px;"><h2>No scheduled items</h2></div>';
+                return;
+            }
+
+            if (currentFilter === 'alreadyWatched') {
+                // Only items that have been watched (rated by at least one user)
+                const watchedItems = allItems.filter(item => item.watched);
+                // Group by category (like Home), no dates
+                const grouped = {};
+                categoryOrder.forEach(cat => grouped[cat] = []);
+                watchedItems.forEach(item => {
+                    if (grouped[item.category]) grouped[item.category].push(item);
+                });
+                let html = '';
+                categoryOrder.forEach(cat => { if (grouped[cat].length) html += renderCategoryHTML(cat, grouped[cat], false); });
+                container.innerHTML = html || '<div class="category-section" style="text-align:center; padding:80px 20px;"><h2>No watched items yet</h2></div>';
+                return;
+            }
+
+            // Home, Movies, Series (default category view)
+            const grouped = {};
+            categoryOrder.forEach(cat => grouped[cat] = []);
+            allItems.forEach(item => {
+                if (currentFilter === 'all' || currentFilter === item.type) {
+                    if (grouped[item.category]) grouped[item.category].push(item);
+                }
+            });
+            let html = '';
+            categoryOrder.forEach(cat => { if (grouped[cat].length) html += renderCategoryHTML(cat, grouped[cat], false); });
+            container.innerHTML = html || '<div class="category-section" style="text-align:center; padding:80px 20px;"><h2>No titles found</h2></div>';
+        }
+
+        function renderCategoryHTML(categoryName, items, showScheduleBadge = false) {
+            let cards = items.map(item => createCardHTML(item, showScheduleBadge)).join('');
+            return `<div class="category-section">
+                <div class="category-header"><span class="category-title">${categoryName}</span></div>
+                <div class="category-row">${cards}</div>
+            </div>`;
+        }
+
+        function createCardHTML(item, showScheduleBadge = false) {
+            const avg = getAverageRating(item);
+            const stars = ratingToStars(avg);
+            const typeLabel = item.type === 'movie' ? 'Movie' : 'Series';
+            let badges = '';
+            if (showScheduleBadge && item.day) {
+                badges += `<span class="schedule-badge">📅 ${item.day}</span>`;
+            }
+            return `
+            <div class="card" onclick="openDetail(${item.id})">
+                <div class="card-poster-wrapper">
+                    <img class="card-poster" src="${item.poster}" alt="${item.title}" loading="lazy">
+                </div>
+                <span class="card-type-badge">${typeLabel}</span>
+                <div class="card-info">
+                    <div class="card-title">${item.title}</div>
+                    <div class="card-stars">${stars || '☆☆☆☆☆'}</div>
+                    <div class="card-meta">
+                        <span>${item.year}</span>
+                        ${badges}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function updateHeroItem(item) {
+            currentHeroItem = item;
+            const avg = getAverageRating(item);
+            document.getElementById('heroTitle').textContent = item.title;
+            document.getElementById('heroStars').textContent = ratingToStars(avg) || '☆☆☆☆☆';
+            document.getElementById('heroYear').textContent = item.year;
+            document.getElementById('heroDuration').textContent = item.duration;
+            document.getElementById('heroDescription').textContent = item.description;
+            document.getElementById('heroBadge').textContent = item.type === 'movie' ? 'MOVIE' : 'SERIES';
+            document.getElementById('heroBadge').className = 'hero-badge ' + (item.type==='movie'?'badge-movie':'badge-series');
+            document.getElementById('hero').style.backgroundImage = `linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(20,20,20,0.35) 40%, rgba(20,20,20,0.85) 75%, #141414 100%), linear-gradient(90deg, rgba(20,20,20,0.7) 0%, rgba(20,20,20,0.2) 50%, rgba(20,20,20,0.1) 100%), url('${item.banner}') center/cover no-repeat`;
+            document.getElementById('heroContent').style.animation = 'none';
+            document.getElementById('heroContent').offsetHeight;
+            document.getElementById('heroContent').style.animation = 'fadeInUp 0.8s ease forwards';
+        }
+
+        function openDetail(id) {
+            const item = allItems.find(i => i.id === id);
+            if (!item) return;
+            currentModalItem = item;
+            const avg = getAverageRating(item);
+            document.getElementById('modalPoster').src = item.banner;
+            document.getElementById('modalTitle').textContent = item.title;
+            document.getElementById('modalStars').textContent = ratingToStars(avg) || '☆☆☆☆☆';
+            document.getElementById('modalYear').textContent = item.year;
+            document.getElementById('modalDuration').textContent = item.duration;
+            document.getElementById('modalType').textContent = item.type;
+            document.getElementById('modalDay').textContent = item.day ? `📅 ${item.day}` : '';
+            document.getElementById('modalDescription').textContent = item.description;
+
+            const watchedDiv = document.getElementById('watchedUsers');
+            let html = '';
+            if (item.watched) {
+                if (item.watched.may) {
+                    html += `<div class="watched-user"><span class="user-name">👩 May</span><span class="user-stars">${ratingToStars(item.watched.may.rating)}</span><span class="user-comment">${item.watched.may.comment || ''}</span></div>`;
+                }
+                if (item.watched.jay) {
+                    html += `<div class="watched-user"><span class="user-name">👨 Jay</span><span class="user-stars">${ratingToStars(item.watched.jay.rating)}</span><span class="user-comment">${item.watched.jay.comment || ''}</span></div>`;
+                }
+            }
+            watchedDiv.innerHTML = html;
+
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(e) {
+            if (e && e.target !== document.getElementById('modalOverlay')) return;
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+            currentModalItem = null;
+        }
+
+        function filterContent(filter, linkElement) {
+            currentFilter = filter;
+            document.querySelectorAll('.nav-links li a').forEach(a => a.classList.remove('active'));
+            if (linkElement) linkElement.classList.add('active');
+            document.getElementById('searchInput').value = '';
+            renderAllCategories();
+            document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) { renderAllCategories(); return; }
+            let filtered = allItems.filter(i => i.title.toLowerCase().includes(query));
+            if (currentFilter === 'movie' || currentFilter === 'series') {
+                filtered = filtered.filter(i => i.type === currentFilter);
+            } else if (currentFilter === 'alreadyWatched') {
+                filtered = filtered.filter(i => i.watched);
+            }
+            // For watchlist, no extra filter – it already shows all
+            const container = document.getElementById('mainContent');
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="category-section" style="text-align:center; padding:80px 20px;"><h2>No results</h2></div>';
+            } else {
+                if (currentFilter === 'watchlist') {
+                    // Show search results grouped by day
+                    const dayMap = {};
+                    daysOrder.forEach(d => dayMap[d] = []);
+                    const unscheduled = [];
+                    filtered.forEach(item => {
+                        if (item.day && daysOrder.includes(item.day)) dayMap[item.day].push(item);
+                        else unscheduled.push(item);
+                    });
+                    let html = '';
+                    daysOrder.forEach(day => { if (dayMap[day].length) html += renderCategoryHTML(`📅 ${day}`, dayMap[day], true); });
+                    if (unscheduled.length) html += renderCategoryHTML('Unscheduled', unscheduled, false);
+                    container.innerHTML = html || '<div class="category-section" style="text-align:center; padding:80px 20px;"><h2>No results</h2></div>';
+                } else {
+                    container.innerHTML = renderCategoryHTML('Search Results', filtered, currentFilter === 'watchlist');
+                }
+            }
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeModal();
+            if ((e.key === '/' || (e.ctrlKey && e.key === 'f')) && document.activeElement !== document.getElementById('searchInput')) {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+
+        init();
+    </script>
+</body>
+</html>
