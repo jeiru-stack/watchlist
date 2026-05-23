@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>May and Jay</title>
     <style>
         :root {
@@ -16,6 +16,7 @@
             --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             --star-full: #ffd700;
             --star-empty: #555;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
         * {
@@ -24,70 +25,93 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-overflow-scrolling: touch;
+        }
+
         body {
             background-color: var(--bg);
             color: var(--text);
             font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            padding-bottom: var(--safe-bottom);
         }
 
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 4px;
+            height: 4px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: #555;
-            border-radius: 3px;
+            background: #444;
+            border-radius: 2px;
         }
 
+        /* ── Navbar ──────────────────────── */
         .navbar {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            padding: 16px 60px;
+            padding: 14px 32px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: background-color 0.4s ease, padding 0.4s ease;
+            transition: background-color 0.4s ease, padding 0.35s ease;
             background-color: transparent;
+            gap: 12px;
         }
         .navbar.scrolled {
             background-color: var(--navbar-bg);
-            padding: 10px 60px;
-            backdrop-filter: blur(10px);
+            padding: 8px 24px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
         }
         .navbar-left {
             display: flex;
             align-items: center;
-            gap: 36px;
+            gap: 24px;
+            flex-shrink: 0;
         }
         .logo {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 900;
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
             color: #e50914;
             text-transform: uppercase;
             cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+            transition: font-size 0.35s ease;
         }
         .nav-links {
             display: flex;
             list-style: none;
-            gap: 24px;
+            gap: 16px;
+            flex-wrap: nowrap;
         }
         .nav-links li a {
             color: var(--text-muted);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             font-weight: 500;
             transition: color var(--transition);
             cursor: pointer;
             position: relative;
+            white-space: nowrap;
+            -webkit-tap-highlight-color: transparent;
+            padding: 6px 0;
+            display: inline-block;
         }
         .nav-links li a:hover,
         .nav-links li a.active {
@@ -96,7 +120,7 @@
         .nav-links li a.active::after {
             content: '';
             position: absolute;
-            bottom: -6px;
+            bottom: -2px;
             left: 0;
             width: 100%;
             height: 2px;
@@ -106,181 +130,270 @@
         .navbar-right {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
+            flex-shrink: 0;
         }
         .search-box {
             display: flex;
             align-items: center;
-            background: rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 24px;
-            padding: 8px 16px;
-            gap: 8px;
-            transition: border-color var(--transition);
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 22px;
+            padding: 7px 14px;
+            gap: 6px;
+            transition: border-color var(--transition), background 0.3s;
+            -webkit-tap-highlight-color: transparent;
         }
         .search-box:focus-within {
-            border-color: #fff;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(0, 0, 0, 0.7);
         }
         .search-box input {
             background: none;
             border: none;
             color: #fff;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             outline: none;
-            width: 160px;
+            width: 120px;
             transition: width 0.3s ease;
+            min-width: 0;
         }
         .search-box input:focus {
-            width: 220px;
+            width: 160px;
+        }
+        .search-box input::placeholder {
+            color: #777;
         }
         .search-icon {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: #999;
+            flex-shrink: 0;
         }
         .avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
             background: linear-gradient(135deg, #e50914, #b20710);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+        .avatar:active {
+            transform: scale(0.9);
         }
 
+        /* Hamburger */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            z-index: 1100;
+            padding: 4px;
+            -webkit-tap-highlight-color: transparent;
+            background: none;
+            border: none;
+            outline: none;
+        }
+        .hamburger span {
+            width: 22px;
+            height: 2px;
+            background: #fff;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        .hamburger.open span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        .hamburger.open span:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.open span:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -5px);
+        }
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1050;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 28px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .mobile-nav-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .mobile-nav-overlay a {
+            color: #ccc;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 1px;
+            transition: color 0.2s;
+        }
+        .mobile-nav-overlay a.active-mob {
+            color: #e50914;
+        }
+
+        /* ── Hero ────────────────────────── */
         .hero {
             position: relative;
-            height: 85vh;
-            min-height: 550px;
+            height: 70vh;
+            min-height: 420px;
+            max-height: 700px;
             display: flex;
             align-items: flex-end;
-            padding: 0 60px 80px;
-            background: linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(20,20,20,0.35) 40%, rgba(20,20,20,0.85) 75%, #141414 100%),
-                        linear-gradient(90deg, rgba(20,20,20,0.7) 0%, rgba(20,20,20,0.2) 50%, rgba(20,20,20,0.1) 100%),
-                        url('https://media.gq.com/photos/69b98139fb272bde94e6408f/16:9/w_2560%2Cc_limit/DUN3-T1-0050rv3%2520copy.jpg') center/cover no-repeat;
-            transition: background-image 0.6s ease;
+            padding: 0 32px 50px;
+            background: linear-gradient(180deg, rgba(20, 20, 20, 0) 0%, rgba(20, 20, 20, 0.3) 35%, rgba(20, 20, 20, 0.8) 70%, #141414 100%),
+                linear-gradient(90deg, rgba(20, 20, 20, 0.65) 0%, rgba(20, 20, 20, 0.15) 50%, rgba(20, 20, 20, 0.05) 100%),
+                url('https://media.gq.com/photos/69b98139fb272bde94e6408f/16:9/w_2560%2Cc_limit/DUN3-T1-0050rv3%2520copy.jpg') center/cover no-repeat;
+            transition: background-image 0.5s ease;
         }
         .hero-content {
-            max-width: 580px;
+            max-width: 500px;
             z-index: 2;
-            animation: fadeInUp 0.8s ease forwards;
+            animation: fadeInUp 0.7s ease forwards;
         }
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(28px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .hero-badge {
             display: inline-block;
-            padding: 6px 14px;
-            border-radius: 4px;
-            font-size: 0.75rem;
+            padding: 5px 12px;
+            border-radius: 3px;
+            font-size: 0.7rem;
             font-weight: 700;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             text-transform: uppercase;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
-        .badge-movie { background: #e50914; }
-        .badge-series { background: #564dff; }
+        .badge-movie {
+            background: #e50914;
+        }
+        .badge-series {
+            background: #564dff;
+        }
         .hero-title {
-            font-size: 3.5rem;
+            font-size: 2.6rem;
             font-weight: 900;
             letter-spacing: -1px;
-            margin-bottom: 12px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+            margin-bottom: 10px;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+            line-height: 1.1;
         }
         .hero-meta {
             display: flex;
-            gap: 16px;
+            gap: 14px;
             align-items: center;
-            margin-bottom: 16px;
-            font-size: 0.9rem;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
             color: #ccc;
+            flex-wrap: wrap;
         }
         .hero-stars {
             color: var(--star-full);
-            font-size: 1.2rem;
-            letter-spacing: 2px;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
         }
         .hero-description {
-            font-size: 1rem;
-            line-height: 1.6;
-            color: #ccc;
-            margin-bottom: 24px;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: #bbb;
+            margin-bottom: 18px;
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        .btn {
-            padding: 12px 28px;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-play { background: #fff; color: #000; }
-        .btn-play:hover { background: #ddd; }
         .hero-fade-bottom {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 100px;
+            height: 80px;
             background: linear-gradient(transparent, #141414);
             pointer-events: none;
             z-index: 1;
         }
 
+        /* ── Main Content ────────────────── */
         .main-content {
-            margin-top: -60px;
+            margin-top: -50px;
             position: relative;
             z-index: 5;
-            padding-bottom: 60px;
+            padding-bottom: 40px;
         }
         .category-section {
-            margin-bottom: 40px;
-            padding: 0 60px;
+            margin-bottom: 28px;
+            padding: 0 32px;
         }
         .category-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
         }
         .category-title {
-            font-size: 1.4rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #e5e5e5;
-            cursor: pointer;
+            cursor: default;
         }
         .category-row {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             overflow-x: auto;
-            padding: 10px 0 20px;
+            padding: 8px 0 16px;
             scroll-behavior: smooth;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x proximity;
         }
-        .category-row::-webkit-scrollbar { display: none; }
+        .category-row::-webkit-scrollbar {
+            display: none;
+        }
 
+        /* ── Card ────────────────────────── */
         .card {
             flex: 0 0 auto;
-            width: 210px;
+            width: 175px;
             border-radius: 6px;
             overflow: hidden;
             background: var(--card-bg);
             cursor: pointer;
-            transition: box-shadow 0.35s ease;
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
             position: relative;
             z-index: 1;
+            scroll-snap-align: start;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .card:active {
+            transform: scale(0.97);
+            transition: transform 0.1s ease;
         }
         .card:hover {
             box-shadow: var(--shadow);
@@ -290,83 +403,91 @@
             overflow: hidden;
             border-radius: 6px 6px 0 0;
             line-height: 0;
+            aspect-ratio: 2/3;
+            background: #2a2a2a;
         }
         .card-poster {
             width: 100%;
-            aspect-ratio: 2/3;
+            height: 100%;
             object-fit: cover;
             display: block;
-            background: #2a2a2a;
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .card:hover .card-poster {
-            transform: scale(1.15);
+            transform: scale(1.12);
         }
         .card-info {
-            padding: 10px 12px 14px;
+            padding: 10px 10px 12px;
             background: #1a1a1a;
             border-radius: 0 0 6px 6px;
-            opacity: 1;
         }
         .card-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.2;
         }
         .card-stars {
             color: var(--star-full);
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            margin-top: 4px;
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+            margin-top: 3px;
         }
         .card-meta {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: #999;
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: center;
-            margin-top: 4px;
+            margin-top: 3px;
             flex-wrap: wrap;
         }
         .card-type-badge {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            padding: 3px 8px;
+            top: 6px;
+            left: 6px;
+            padding: 2px 7px;
             border-radius: 3px;
             font-size: 0.6rem;
             font-weight: 700;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.6px;
             text-transform: uppercase;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.75);
             z-index: 10;
             opacity: 0;
             transition: opacity var(--transition);
         }
-        .card:hover .card-type-badge { opacity: 1; }
+        .card:hover .card-type-badge {
+            opacity: 1;
+        }
         .schedule-badge {
             display: inline-block;
             background: #2a2a2a;
             color: #54b9c5;
-            font-size: 0.65rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-            margin-top: 4px;
+            font-size: 0.62rem;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-top: 3px;
+            white-space: nowrap;
         }
 
+        /* ── Modal ───────────────────────── */
         .modal-overlay {
             position: fixed;
             inset: 0;
             z-index: 2000;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0, 0, 0, 0.88);
             display: flex;
             align-items: center;
             justify-content: center;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease;
+            padding: 16px;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
         }
         .modal-overlay.active {
             opacity: 1;
@@ -375,120 +496,431 @@
         .modal {
             background: #1a1a1a;
             border-radius: 12px;
-            width: 90%;
-            max-width: 750px;
-            max-height: 85vh;
+            width: 100%;
+            max-width: 650px;
+            max-height: 88vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
             position: relative;
             animation: modalIn 0.3s ease;
+            -webkit-overflow-scrolling: touch;
         }
         @keyframes modalIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
+            from {
+                transform: scale(0.92);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
         .modal-close {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            width: 36px;
-            height: 36px;
+            position: sticky;
+            top: 12px;
+            float: right;
+            margin-right: 12px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
             border: none;
             color: #fff;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
             z-index: 10;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: background 0.2s;
+            -webkit-tap-highlight-color: transparent;
         }
-        .modal-close:hover { background: var(--accent); }
+        .modal-close:hover {
+            background: var(--accent);
+        }
+        .modal-close:active {
+            transform: scale(0.9);
+        }
         .modal-poster {
             width: 100%;
-            height: 350px;
+            height: 240px;
             object-fit: cover;
             border-radius: 12px 12px 0 0;
             background: #2a2a2a;
+            display: block;
         }
-        .modal-body { padding: 24px 30px 30px; }
-        .modal-title { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
+        .modal-body {
+            padding: 20px 22px 24px;
+        }
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
         .modal-meta {
             display: flex;
-            gap: 14px;
+            gap: 12px;
             align-items: center;
-            margin-bottom: 14px;
-            font-size: 0.9rem;
+            margin-bottom: 12px;
+            font-size: 0.82rem;
             color: #bbb;
             flex-wrap: wrap;
         }
         .modal-stars {
             color: var(--star-full);
-            font-size: 1.3rem;
-            letter-spacing: 2px;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
         }
-        .modal-description { color: #ccc; line-height: 1.7; margin-bottom: 20px; }
+        .modal-description {
+            color: #ccc;
+            line-height: 1.65;
+            margin-bottom: 18px;
+            font-size: 0.9rem;
+        }
         .watched-users {
-            margin-top: 16px;
+            margin-top: 14px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
         .watched-user {
             background: #2a2a2a;
-            padding: 12px 16px;
+            padding: 10px 14px;
             border-radius: 8px;
             color: #ddd;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
         }
         .watched-user .user-name {
             font-weight: 600;
-            min-width: 60px;
+            min-width: 50px;
         }
         .watched-user .user-stars {
             color: var(--star-full);
+            white-space: nowrap;
         }
         .watched-user .user-comment {
             font-style: italic;
             color: #aaa;
             flex: 1;
+            min-width: 120px;
         }
 
+        /* ── Tablet (≤1024px) ────────────── */
+        @media (max-width: 1024px) {
+            .navbar {
+                padding: 10px 20px;
+            }
+            .navbar.scrolled {
+                padding: 6px 16px;
+            }
+            .nav-links {
+                gap: 10px;
+            }
+            .nav-links li a {
+                font-size: 0.75rem;
+            }
+            .hero {
+                height: 55vh;
+                min-height: 340px;
+                padding: 0 20px 40px;
+            }
+            .hero-title {
+                font-size: 2rem;
+            }
+            .hero-description {
+                font-size: 0.8rem;
+            }
+            .category-section {
+                padding: 0 20px;
+            }
+            .card {
+                width: 150px;
+            }
+            .search-box input {
+                width: 90px;
+            }
+            .search-box input:focus {
+                width: 130px;
+            }
+        }
+
+        /* ── Mobile (≤768px) ─────────────── */
         @media (max-width: 768px) {
-            .navbar { padding: 12px 20px; }
-            .hero { height: 65vh; padding: 0 20px 60px; }
-            .hero-title { font-size: 2rem; }
-            .category-section { padding: 0 20px; }
-            .card { width: 150px; }
-            .modal { width: 95%; }
-            .modal-poster { height: 220px; }
-            .modal-title { font-size: 1.4rem; }
+            .navbar {
+                padding: 8px 14px;
+                gap: 8px;
+            }
+            .navbar.scrolled {
+                padding: 6px 12px;
+            }
+            .logo {
+                font-size: 1.25rem;
+                letter-spacing: -0.3px;
+            }
+            .nav-links {
+                display: none;
+            }
+            .hamburger {
+                display: flex;
+            }
+            .mobile-nav-overlay {
+                display: flex;
+            }
+            .navbar-right {
+                gap: 8px;
+            }
+            .search-box {
+                padding: 6px 10px;
+                border-radius: 18px;
+                gap: 4px;
+            }
+            .search-box input {
+                width: 70px;
+                font-size: 0.78rem;
+            }
+            .search-box input:focus {
+                width: 110px;
+            }
+            .search-icon {
+                font-size: 0.75rem;
+            }
+            .avatar {
+                width: 26px;
+                height: 26px;
+                font-size: 0.65rem;
+            }
+            .hero {
+                height: 50vh;
+                min-height: 300px;
+                padding: 0 14px 35px;
+                background-attachment: scroll;
+            }
+            .hero-content {
+                max-width: 100%;
+            }
+            .hero-title {
+                font-size: 1.6rem;
+                letter-spacing: -0.5px;
+            }
+            .hero-meta {
+                font-size: 0.7rem;
+                gap: 8px;
+            }
+            .hero-stars {
+                font-size: 0.9rem;
+            }
+            .hero-description {
+                font-size: 0.75rem;
+                -webkit-line-clamp: 2;
+                margin-bottom: 12px;
+            }
+            .hero-badge {
+                font-size: 0.6rem;
+                padding: 4px 10px;
+            }
+            .hero-fade-bottom {
+                height: 50px;
+            }
+            .main-content {
+                margin-top: -35px;
+            }
+            .category-section {
+                padding: 0 14px;
+                margin-bottom: 20px;
+            }
+            .category-title {
+                font-size: 1.05rem;
+            }
+            .category-row {
+                gap: 8px;
+                padding: 6px 0 12px;
+            }
+            .card {
+                width: 130px;
+                border-radius: 5px;
+            }
+            .card-poster-wrapper {
+                border-radius: 5px 5px 0 0;
+            }
+            .card-info {
+                padding: 7px 8px 9px;
+            }
+            .card-title {
+                font-size: 0.7rem;
+            }
+            .card-stars {
+                font-size: 0.7rem;
+            }
+            .card-meta {
+                font-size: 0.6rem;
+                gap: 4px;
+            }
+            .card-type-badge {
+                font-size: 0.55rem;
+                padding: 2px 5px;
+                top: 4px;
+                left: 4px;
+            }
+            .schedule-badge {
+                font-size: 0.58rem;
+                padding: 2px 5px;
+            }
+            .modal-overlay {
+                padding: 8px;
+                align-items: flex-end;
+            }
+            .modal {
+                max-width: 100%;
+                max-height: 92vh;
+                border-radius: 16px 16px 0 0;
+                animation: modalInMobile 0.35s ease;
+            }
+            @keyframes modalInMobile {
+                from {
+                    transform: translateY(60px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            .modal-poster {
+                height: 180px;
+                border-radius: 16px 16px 0 0;
+            }
+            .modal-close {
+                top: 8px;
+                margin-right: 8px;
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+            }
+            .modal-body {
+                padding: 16px 16px 20px;
+            }
+            .modal-title {
+                font-size: 1.3rem;
+            }
+            .modal-meta {
+                font-size: 0.75rem;
+                gap: 8px;
+            }
+            .modal-stars {
+                font-size: 1rem;
+            }
+            .modal-description {
+                font-size: 0.8rem;
+                line-height: 1.5;
+            }
+            .watched-user {
+                padding: 8px 10px;
+                font-size: 0.75rem;
+                gap: 8px;
+            }
+            .watched-user .user-name {
+                min-width: 40px;
+            }
+        }
+
+        /* ── Small Mobile (≤400px) ───────── */
+        @media (max-width: 400px) {
+            .navbar {
+                padding: 6px 10px;
+            }
+            .logo {
+                font-size: 1.1rem;
+            }
+            .search-box input {
+                width: 50px;
+                font-size: 0.7rem;
+            }
+            .search-box input:focus {
+                width: 85px;
+            }
+            .hero {
+                height: 42vh;
+                min-height: 250px;
+                padding: 0 10px 25px;
+            }
+            .hero-title {
+                font-size: 1.3rem;
+            }
+            .hero-description {
+                font-size: 0.7rem;
+                -webkit-line-clamp: 2;
+            }
+            .category-section {
+                padding: 0 10px;
+            }
+            .card {
+                width: 110px;
+            }
+            .card-title {
+                font-size: 0.65rem;
+            }
+            .card-stars {
+                font-size: 0.65rem;
+            }
+            .modal-poster {
+                height: 150px;
+            }
+            .modal-title {
+                font-size: 1.15rem;
+            }
+        }
+
+        /* ── Landscape phone ─────────────── */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .hero {
+                height: 70vh;
+                min-height: 280px;
+            }
+            .modal-poster {
+                height: 140px;
+            }
+            .modal {
+                max-height: 95vh;
+            }
         }
     </style>
 </head>
 <body>
     <nav class="navbar" id="navbar">
         <div class="navbar-left">
-            <span class="logo" onclick="location.reload()">May & Jay</span>
-            <ul class="nav-links">
+            <span class="logo" onclick="location.reload()" aria-label="Home">May & Jay</span>
+            <ul class="nav-links" id="navLinks">
                 <li><a class="active" data-filter="all" onclick="filterContent('all', this)">Home</a></li>
                 <li><a data-filter="movie" onclick="filterContent('movie', this)">Movies</a></li>
                 <li><a data-filter="series" onclick="filterContent('series', this)">Series</a></li>
                 <li><a data-filter="watchlist" onclick="filterContent('watchlist', this)">Watchlist</a></li>
-                <li><a data-filter="alreadyWatched" onclick="filterContent('alreadyWatched', this)">Already Watched</a></li>
+                <li><a data-filter="alreadyWatched" onclick="filterContent('alreadyWatched', this)">Watched</a></li>
             </ul>
         </div>
         <div class="navbar-right">
             <div class="search-box">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Search titles..." oninput="handleSearch()">
+                <input type="text" id="searchInput" placeholder="Search..." oninput="handleSearch()" aria-label="Search titles">
             </div>
-            <div class="avatar">U</div>
+            <div class="avatar" aria-label="User">U</div>
+            <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
+
+    <div class="mobile-nav-overlay" id="mobileNavOverlay">
+        <a data-filter="all" class="active-mob" onclick="mobileNavSelect('all', this)">Home</a>
+        <a data-filter="movie" onclick="mobileNavSelect('movie', this)">Movies</a>
+        <a data-filter="series" onclick="mobileNavSelect('series', this)">Series</a>
+        <a data-filter="watchlist" onclick="mobileNavSelect('watchlist', this)">Watchlist</a>
+        <a data-filter="alreadyWatched" onclick="mobileNavSelect('alreadyWatched', this)">Watched</a>
+    </div>
 
     <section class="hero" id="hero">
         <div class="hero-content" id="heroContent">
@@ -508,8 +940,8 @@
 
     <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
         <div class="modal" id="modal" onclick="event.stopPropagation()">
-            <button class="modal-close" onclick="closeModal()">✕</button>
-            <img class="modal-poster" id="modalPoster" src="" alt="">
+            <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+            <img class="modal-poster" id="modalPoster" src="" alt="" loading="lazy">
             <div class="modal-body">
                 <h2 class="modal-title" id="modalTitle"></h2>
                 <div class="modal-meta">
@@ -527,40 +959,56 @@
 
     <script>
         const allItems = [
-            { id: 1, title: 'Dune: Part Three', type: 'movie', category: 'Sci-Fi', year: 2026, duration: '2h 46m', poster: 'https://m.media-amazon.com/images/M/MV5BMDA2MDVmNWItODA3My00Mzc2LThmODMtMThhYTVlMGJkYjA4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg', banner: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5yyrEU3cBZ-ArACbiTlvczxmZLXtZXmVDrhRhiKIKhEkjtv7512a8-CLk5KVNk0Ko6CTytf3QXdfjNTAikSugKgSgUGvDh-yjZB7EI_s&s', description: 'Emperor Paul Atreides faces the fallout from his ascent to power as political plots and a galaxy-wide holy war endanger the future only he can see.', day: '', 
-                watched: { may: { rating: 9.0, comment: 'A true masterpiece' }, jay: { rating: 8.5, comment: 'Visually stunning' } } },
-            { id: 2, title: 'The Garden of Words', type: 'movie', category: 'Anime', year: 2013, duration: '46m', poster: 'https://m.media-amazon.com/images/M/MV5BYjdiMDdlMDItOGM4Ny00YmE4LTk0MTEtMGRhM2Y4OWZkZDZkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg', banner: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHYOkcHIdRfXjfYyBEuzkSdL8Lr0Ist0xb4g&s', description: 'On a rainy morning in Tokyo, 15-year-old Takao, an aspiring shoemaker, decides to skip class to sketch designs in a beautiful garden.', day: '',
-                watched: null },
-            { id: 3, title: '5 Centimeters per Second', type: 'movie', category: 'Anime', year: 2007, duration: '1h 3m', poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQ2qjimhfz6MrDqMojN810TpZLnyYXcYsl2acA_fv_GCkyczoZQ_aq2McGaYgHjPqXSv08RRsktt3oRItB0BO5yCz9D1-BoxuhIyXbl2DDIw&s=10', banner: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCVkpxvVllEul1tfD-Y5j29oEvL9abYQylMIiF_JV5Mg&s=10', description: 'Told in three interconnected segments, Takaki tells the story of his life as cruel winters, cold technology, and finally, adult obligations and responsibility converge to test the delicate petals of love.', day: 'May 30',
-                watched: null },
-
+            {
+                id: 1,
+                title: 'Dune: Part Three',
+                type: 'movie',
+                category: 'Sci-Fi',
+                year: 2026,
+                duration: '2h 46m',
+                poster: 'https://m.media-amazon.com/images/M/MV5BMDA2MDVmNWItODA3My00Mzc2LThmODMtMThhYTVlMGJkYjA4XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg',
+                banner: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5yyrEU3cBZ-ArACbiTlvczxmZLXtZXmVDrhRhiKIKhEkjtv7512a8-CLk5KVNk0Ko6CTytf3QXdfjNTAikSugKgSgUGvDh-yjZB7EI_s&s',
+                description: 'Emperor Paul Atreides faces the fallout from his ascent to power as political plots and a galaxy-wide holy war endanger the future only he can see.',
+                day: '',
+                watched: {
+                    may: { rating: 9.0, comment: 'A true masterpiece' },
+                    jay: { rating: 8.5, comment: 'Visually stunning' }
+                }
+            },
+            {
+                id: 2,
+                title: 'The Garden of Words',
+                type: 'movie',
+                category: 'Anime',
+                year: 2013,
+                duration: '46m',
+                poster: 'https://m.media-amazon.com/images/M/MV5BYjdiMDdlMDItOGM4Ny00YmE4LTk0MTEtMGRhM2Y4OWZkZDZkXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg',
+                banner: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSHYOkcHIdRfXjfYyBEuzkSdL8Lr0Ist0xb4g&s',
+                description: 'On a rainy morning in Tokyo, 15-year-old Takao, an aspiring shoemaker, decides to skip class to sketch designs in a beautiful garden.',
+                day: '',
+                watched: null
+            },
+            {
+                id: 3,
+                title: '5 Centimeters per Second',
+                type: 'movie',
+                category: 'Anime',
+                year: 2007,
+                duration: '1h 3m',
+                poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQ2qjimhfz6MrDqMojN810TpZLnyYXcYsl2acA_fv_GCkyczoZQ_aq2McGaYgHjPqXSv08RRsktt3oRItB0BO5yCz9D1-BoxuhIyXbl2DDIw&s=10',
+                banner: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCVkpxvVllEul1tfD-Y5j29oEvL9abYQylMIiF_JV5Mg&s=10',
+                description: 'Told in three interconnected segments, Takaki tells the story of his life as cruel winters, cold technology, and finally, adult obligations and responsibility converge to test the delicate petals of love.',
+                day: 'May 30',
+                watched: null
+            },
         ];
-    
-// //           { id: 3, title: 'Oppenheimer', type: 'movie', category: 'Drama', year: 2023, duration: '3h 0m', poster: 'https://picsum.photos/seed/oppen/400/600', banner: 'https://picsum.photos/seed/oppen-banner/1920/1080', description: 'The story of J. Robert Oppenheimer.', day: 'Wednesday', watched: null },
-//           { id: 4, title: 'Spider-Verse 2', type: 'movie', category: 'Animation', year: 2023, duration: '2h 20m', poster: 'https://picsum.photos/seed/spiderverse/400/600', banner: 'https://picsum.photos/seed/spider-banner/1920/1080', description: 'Miles Morales journeys across the Multiverse.', day: '', watched: { may: { rating: 9.2, comment: 'Best animation ever' }, jay: { rating: 8.9, comment: 'So creative' } } },
-//         { id: 5, title: 'John Wick 4', type: 'movie', category: 'Action', year: 2023, duration: '2h 49m', poster: 'https://picsum.photos/seed/johnwick4/400/600', banner: 'https://picsum.photos/seed/jw-banner/1920/1080', description: 'John Wick faces a new enemy.', day: 'Thursday', watched: { may: { rating: 7.0, comment: 'Great action' } } },
-//       { id: 6, title: 'The Creator', type: 'movie', category: 'Sci-Fi', year: 2023, duration: '2h 13m', poster: 'https://picsum.photos/seed/creator23/400/600', banner: 'https://picsum.photos/seed/creator-banner/1920/1080', description: 'A war between humanity and AI.', day: 'Friday', watched: { jay: { rating: 6.8, comment: 'Cool visuals' } } },
-//     { id: 7, title: 'A Quiet Place II', type: 'movie', category: 'Horror', year: 2021, duration: '1h 37m', poster: 'https://picsum.photos/seed/quietplace/400/600', banner: 'https://picsum.photos/seed/quiet-banner/1920/1080', description: 'The Abbott family faces terrors outside.', day: 'Saturday', watched: { may: { rating: 8.1, comment: 'So tense' }, jay: { rating: 7.9, comment: 'Good sequel' } } },
-         //   { id: 8, title: 'Everything Everywhere', type: 'movie', category: 'Comedy', year: 2022, duration: '2h 19m', poster: 'https://picsum.photos/seed/everywhere/400/600', banner: 'https://picsum.photos/seed/ee-banner/1920/1080', description: 'An aging immigrant must save the world.', day: '', watched: null },
-           // { id: 9, title: 'Stranger Things', type: 'series', category: 'Horror', year: 2022, duration: '4 Seasons', poster: 'https://picsum.photos/seed/stranger/400/600', banner: 'https://picsum.photos/seed/stranger-banner/1920/1080', description: 'A small town uncovers a mystery.', day: 'Sunday', watched: { may: { rating: 9.0, comment: 'Nostalgic & scary' }, jay: { rating: 8.8, comment: 'Love the kids' } } },
-//            { id: 10, title: 'The Last of Us', type: 'series', category: 'Drama', year: 2023, duration: '1 Season', poster: 'https://picsum.photos/seed/lastofus/400/600', banner: 'https://picsum.photos/seed/tlou-banner/1920/1080', description: 'Joel and Ellie cross a post-pandemic America.', day: 'Monday', watched: { may: { rating: 9.5, comment: 'Perfect adaptation' }, jay: { rating: 9.2, comment: 'Emotional' } } },
-//            { id: 11, title: 'Wednesday', type: 'series', category: 'Comedy', year: 2022, duration: '1 Season', poster: 'https://picsum.photos/seed/wednesday/400/600', banner: 'https://picsum.photos/seed/wed-banner/1920/1080', description: 'Wednesday Addams solves a mystery.', day: 'Tuesday', watched: { jay: { rating: 7.8, comment: 'Quirky fun' } } },
-//            { id: 12, title: 'The Mandalorian', type: 'series', category: 'Sci-Fi', year: 2023, duration: '3 Seasons', poster: 'https://picsum.photos/seed/mando/400/600', banner: 'https://picsum.photos/seed/mando-banner/1920/1080', description: 'A lone bounty hunter travels the galaxy.', day: 'Wednesday', watched: { may: { rating: 8.7, comment: 'Baby Yoda!' }, jay: { rating: 8.4, comment: 'Great world-building' } } },
-//            { id: 13, title: 'Breaking Bad', type: 'series', category: 'Drama', year: 2013, duration: '5 Seasons', poster: 'https://picsum.photos/seed/breakingbad/400/600', banner: 'https://picsum.photos/seed/bb-banner/1920/1080', description: 'A chemistry teacher turns to crime.', day: 'Thursday', watched: { may: { rating: 9.8, comment: 'Absolute genius' }, jay: { rating: 9.7, comment: 'Best show ever' } } },
-//            { id: 14, title: 'Arcane', type: 'series', category: 'Animation', year: 2021, duration: '1 Season', poster: 'https://picsum.photos/seed/arcane/400/600', banner: 'https://picsum.photos/seed/arcane-banner/1920/1080', description: 'Two sisters fight on rival sides of a war.', day: 'Friday', watched: null },
-//            { id: 15, title: 'House of the Dragon', type: 'series', category: 'Action', year: 2022, duration: '1 Season', poster: 'https://picsum.photos/seed/hotd/400/600', banner: 'https://picsum.photos/seed/hotd-banner/1920/1080', description: 'Targaryen civil war.', day: 'Saturday', watched: { may: { rating: 8.2, comment: 'Epic return to Westeros' }, jay: { rating: 8.0, comment: 'Slow start' } } },
-//            { id: 16, title: 'Squid Game', type: 'series', category: 'Horror', year: 2021, duration: '1 Season', poster: 'https://picsum.photos/seed/squidgame/400/600', banner: 'https://picsum.photos/seed/squid-banner/1920/1080', description: 'Deadly children\'s games.', day: '', watched: { may: { rating: 7.5, comment: 'Intense' } } },
 
-    
-    
-    
-    
-    
         const categoryOrder = ['Trending Now', 'Action', 'Sci-Fi', 'Drama', 'Horror', 'Comedy', 'Anime'];
-        const daysOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+        const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
         let currentFilter = 'all';
         let currentHeroItem = allItems[0];
         let currentModalItem = null;
+        let mobileMenuOpen = false;
 
         function getAverageRating(item) {
             const allRatings = [];
@@ -569,7 +1017,7 @@
                 if (item.watched.jay) allRatings.push(item.watched.jay.rating);
             }
             if (allRatings.length > 0) {
-                const avg = allRatings.reduce((a,b)=>a+b,0) / allRatings.length;
+                const avg = allRatings.reduce((a, b) => a + b, 0) / allRatings.length;
                 return Math.round(avg * 2) / 2;
             }
             return 0;
@@ -586,7 +1034,46 @@
             updateHeroItem(allItems[0]);
             renderAllCategories();
             window.addEventListener('scroll', () => {
-                document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+                document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40);
+            });
+            // Close mobile menu on window resize if desktop
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768 && mobileMenuOpen) {
+                    closeMobileMenu();
+                }
+            });
+        }
+
+        function toggleMobileMenu() {
+            const hamburger = document.getElementById('hamburger');
+            const overlay = document.getElementById('mobileNavOverlay');
+            mobileMenuOpen = !mobileMenuOpen;
+            if (mobileMenuOpen) {
+                hamburger.classList.add('open');
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                closeMobileMenu();
+            }
+        }
+
+        function closeMobileMenu() {
+            mobileMenuOpen = false;
+            document.getElementById('hamburger').classList.remove('open');
+            document.getElementById('mobileNavOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function mobileNavSelect(filter, linkElement) {
+            closeMobileMenu();
+            filterContent(filter, null);
+            // Update mobile overlay active state
+            document.querySelectorAll('#mobileNavOverlay a').forEach(a => a.classList.remove('active-mob'));
+            if (linkElement) linkElement.classList.add('active-mob');
+            // Update desktop nav active state
+            document.querySelectorAll('.nav-links li a').forEach(a => {
+                a.classList.remove('active');
+                if (a.getAttribute('data-filter') === filter) a.classList.add('active');
             });
         }
 
@@ -595,7 +1082,6 @@
             container.innerHTML = '';
 
             if (currentFilter === 'watchlist') {
-                // Group all items by their hardcoded day
                 const dayMap = {};
                 daysOrder.forEach(d => dayMap[d] = []);
                 const unscheduled = [];
@@ -604,28 +1090,29 @@
                     else unscheduled.push(item);
                 });
                 let html = '';
-                daysOrder.forEach(day => { if (dayMap[day].length) html += renderCategoryHTML(`📅 ${day}`, dayMap[day], true); });
+                daysOrder.forEach(day => { if (dayMap[day].length) html +=
+                        renderCategoryHTML(`📅 ${day}`, dayMap[day], true); });
                 if (unscheduled.length) html += renderCategoryHTML('Unscheduled', unscheduled, false);
-                container.innerHTML = html || '<div class="category-section" style="text-align:center; padding:80px 20px;"><h2>No scheduled items</h2></div>';
+                container.innerHTML = html ||
+                    '<div class="category-section" style="text-align:center; padding:60px 20px;"><h2 style="font-size:1rem;">No scheduled items</h2></div>';
                 return;
             }
 
             if (currentFilter === 'alreadyWatched') {
-                // Only items that have been watched (rated by at least one user)
                 const watchedItems = allItems.filter(item => item.watched);
-                // Group by category (like Home), no dates
                 const grouped = {};
                 categoryOrder.forEach(cat => grouped[cat] = []);
                 watchedItems.forEach(item => {
                     if (grouped[item.category]) grouped[item.category].push(item);
                 });
                 let html = '';
-                categoryOrder.forEach(cat => { if (grouped[cat].length) html += renderCategoryHTML(cat, grouped[cat], false); });
-                container.innerHTML = html || '<div class="category-section" style="text-align:center; padding:80px 20px;"><h2>No watched items yet</h2></div>';
+                categoryOrder.forEach(cat => { if (grouped[cat].length) html += renderCategoryHTML(cat,
+                        grouped[cat], false); });
+                container.innerHTML = html ||
+                    '<div class="category-section" style="text-align:center; padding:60px 20px;"><h2 style="font-size:1rem;">No watched items yet</h2></div>';
                 return;
             }
 
-            // Home, Movies, Series (default category view)
             const grouped = {};
             categoryOrder.forEach(cat => grouped[cat] = []);
             allItems.forEach(item => {
@@ -634,8 +1121,10 @@
                 }
             });
             let html = '';
-            categoryOrder.forEach(cat => { if (grouped[cat].length) html += renderCategoryHTML(cat, grouped[cat], false); });
-            container.innerHTML = html || '<div class="category-section" style="text-align:center; padding:80px 20px;"><h2>No titles found</h2></div>';
+            categoryOrder.forEach(cat => { if (grouped[cat].length) html += renderCategoryHTML(cat, grouped[cat],
+                    false); });
+            container.innerHTML = html ||
+                '<div class="category-section" style="text-align:center; padding:60px 20px;"><h2 style="font-size:1rem;">No titles found</h2></div>';
         }
 
         function renderCategoryHTML(categoryName, items, showScheduleBadge = false) {
@@ -655,7 +1144,7 @@
                 badges += `<span class="schedule-badge">📅 ${item.day}</span>`;
             }
             return `
-            <div class="card" onclick="openDetail(${item.id})">
+            <div class="card" onclick="openDetail(${item.id})" role="button" tabindex="0" aria-label="${item.title}">
                 <div class="card-poster-wrapper">
                     <img class="card-poster" src="${item.poster}" alt="${item.title}" loading="lazy">
                 </div>
@@ -680,11 +1169,15 @@
             document.getElementById('heroDuration').textContent = item.duration;
             document.getElementById('heroDescription').textContent = item.description;
             document.getElementById('heroBadge').textContent = item.type === 'movie' ? 'MOVIE' : 'SERIES';
-            document.getElementById('heroBadge').className = 'hero-badge ' + (item.type==='movie'?'badge-movie':'badge-series');
-            document.getElementById('hero').style.backgroundImage = `linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(20,20,20,0.35) 40%, rgba(20,20,20,0.85) 75%, #141414 100%), linear-gradient(90deg, rgba(20,20,20,0.7) 0%, rgba(20,20,20,0.2) 50%, rgba(20,20,20,0.1) 100%), url('${item.banner}') center/cover no-repeat`;
-            document.getElementById('heroContent').style.animation = 'none';
-            document.getElementById('heroContent').offsetHeight;
-            document.getElementById('heroContent').style.animation = 'fadeInUp 0.8s ease forwards';
+            document.getElementById('heroBadge').className = 'hero-badge ' + (item.type === 'movie' ? 'badge-movie' :
+                'badge-series');
+            document.getElementById('hero').style.backgroundImage =
+                `linear-gradient(180deg, rgba(20,20,20,0) 0%, rgba(20,20,20,0.3) 35%, rgba(20,20,20,0.8) 70%, #141414 100%), linear-gradient(90deg, rgba(20,20,20,0.65) 0%, rgba(20,20,20,0.15) 50%, rgba(20,20,20,0.05) 100%), url('${item.banner}') center/cover no-repeat`;
+            // Restart animation
+            const heroContent = document.getElementById('heroContent');
+            heroContent.style.animation = 'none';
+            heroContent.offsetHeight;
+            heroContent.style.animation = 'fadeInUp 0.7s ease forwards';
         }
 
         function openDetail(id) {
@@ -705,16 +1198,21 @@
             let html = '';
             if (item.watched) {
                 if (item.watched.may) {
-                    html += `<div class="watched-user"><span class="user-name">👩 May</span><span class="user-stars">${ratingToStars(item.watched.may.rating)}</span><span class="user-comment">${item.watched.may.comment || ''}</span></div>`;
+                    html +=
+                        `<div class="watched-user"><span class="user-name">👩 May</span><span class="user-stars">${ratingToStars(item.watched.may.rating)}</span><span class="user-comment">${item.watched.may.comment || ''}</span></div>`;
                 }
                 if (item.watched.jay) {
-                    html += `<div class="watched-user"><span class="user-name">👨 Jay</span><span class="user-stars">${ratingToStars(item.watched.jay.rating)}</span><span class="user-comment">${item.watched.jay.comment || ''}</span></div>`;
+                    html +=
+                        `<div class="watched-user"><span class="user-name">👨 Jay</span><span class="user-stars">${ratingToStars(item.watched.jay.rating)}</span><span class="user-comment">${item.watched.jay.comment || ''}</span></div>`;
                 }
             }
             watchedDiv.innerHTML = html;
 
-            document.getElementById('modalOverlay').classList.add('active');
+            const overlay = document.getElementById('modalOverlay');
+            overlay.classList.add('active');
             document.body.style.overflow = 'hidden';
+            // Scroll modal to top
+            document.getElementById('modal').scrollTop = 0;
         }
 
         function closeModal(e) {
@@ -726,29 +1224,36 @@
 
         function filterContent(filter, linkElement) {
             currentFilter = filter;
+            // Update desktop nav
             document.querySelectorAll('.nav-links li a').forEach(a => a.classList.remove('active'));
             if (linkElement) linkElement.classList.add('active');
+            // Update mobile nav
+            document.querySelectorAll('#mobileNavOverlay a').forEach(a => {
+                a.classList.remove('active-mob');
+                if (a.getAttribute('data-filter') === filter) a.classList.add('active-mob');
+            });
             document.getElementById('searchInput').value = '';
             renderAllCategories();
-            document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('mainContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            closeMobileMenu();
         }
 
         function handleSearch() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            if (!query) { renderAllCategories(); return; }
+            if (!query) { renderAllCategories();
+                return; }
             let filtered = allItems.filter(i => i.title.toLowerCase().includes(query));
             if (currentFilter === 'movie' || currentFilter === 'series') {
                 filtered = filtered.filter(i => i.type === currentFilter);
             } else if (currentFilter === 'alreadyWatched') {
                 filtered = filtered.filter(i => i.watched);
             }
-            // For watchlist, no extra filter – it already shows all
             const container = document.getElementById('mainContent');
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="category-section" style="text-align:center; padding:80px 20px;"><h2>No results</h2></div>';
+                container.innerHTML =
+                    '<div class="category-section" style="text-align:center; padding:60px 20px;"><h2 style="font-size:1rem;">No results</h2></div>';
             } else {
                 if (currentFilter === 'watchlist') {
-                    // Show search results grouped by day
                     const dayMap = {};
                     daysOrder.forEach(d => dayMap[d] = []);
                     const unscheduled = [];
@@ -757,21 +1262,36 @@
                         else unscheduled.push(item);
                     });
                     let html = '';
-                    daysOrder.forEach(day => { if (dayMap[day].length) html += renderCategoryHTML(`📅 ${day}`, dayMap[day], true); });
+                    daysOrder.forEach(day => { if (dayMap[day].length) html += renderCategoryHTML(`📅 ${day}`,
+                            dayMap[day], true); });
                     if (unscheduled.length) html += renderCategoryHTML('Unscheduled', unscheduled, false);
-                    container.innerHTML = html || '<div class="category-section" style="text-align:center; padding:80px 20px;"><h2>No results</h2></div>';
+                    container.innerHTML = html ||
+                        '<div class="category-section" style="text-align:center; padding:60px 20px;"><h2 style="font-size:1rem;">No results</h2></div>';
                 } else {
                     container.innerHTML = renderCategoryHTML('Search Results', filtered, currentFilter === 'watchlist');
                 }
             }
         }
 
+        // Keyboard shortcuts
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeModal();
-            if ((e.key === '/' || (e.ctrlKey && e.key === 'f')) && document.activeElement !== document.getElementById('searchInput')) {
+            if (e.key === 'Escape') {
+                if (document.getElementById('modalOverlay').classList.contains('active')) {
+                    closeModal();
+                } else if (mobileMenuOpen) {
+                    closeMobileMenu();
+                }
+            }
+            if ((e.key === '/' || (e.ctrlKey && e.key === 'f')) && document.activeElement !== document.getElementById(
+                    'searchInput')) {
                 e.preventDefault();
                 document.getElementById('searchInput').focus();
             }
+        });
+
+        // Close mobile menu when tapping overlay
+        document.getElementById('mobileNavOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeMobileMenu();
         });
 
         init();
