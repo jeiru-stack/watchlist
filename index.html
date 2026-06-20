@@ -1161,7 +1161,10 @@
                 banner: 'https://www.sheknows.com/wp-content/uploads/2018/12/flipped-movie-review_wezryc.jpeg',
                 description: 'When Juli meets Bryce in the second grade, she knows its true love. After spending six years trying to convince Bryce of the same, shes ready to give up--until he starts to reconsider.',
                 day: '',
-                watched: null
+                watched: {
+                    may: { rating: 10.0, comment: 'I like how getting to know someone can completely change the way we see them' },
+                    jay: { rating: 10.0, comment: 'I love how they include they tackle each unique personalities' }
+                }
             },
         ];
 
@@ -1361,11 +1364,11 @@
             if (item.watched) {
                 if (item.watched.may) {
                     html +=
-                        `<div class="watched-user"><span class="user-name">👩 May</span><span class="user-stars">${ratingToStars(item.watched.may.rating)}</span><span class="user-comment">${item.watched.may.comment || ''}</span></div>`;
+                        `<div class="watched-user"><span class="user-name">May</span><span class="user-stars">${ratingToStars(item.watched.may.rating)}</span><span class="user-comment">${item.watched.may.comment || ''}</span></div>`;
                 }
                 if (item.watched.jay) {
                     html +=
-                        `<div class="watched-user"><span class="user-name">👨 Jay</span><span class="user-stars">${ratingToStars(item.watched.jay.rating)}</span><span class="user-comment">${item.watched.jay.comment || ''}</span></div>`;
+                        `<div class="watched-user"><span class="user-name">Jay</span><span class="user-stars">${ratingToStars(item.watched.jay.rating)}</span><span class="user-comment">${item.watched.jay.comment || ''}</span></div>`;
                 }
             }
             watchedDiv.innerHTML = html;
