@@ -147,6 +147,14 @@ const seedItems = [
         description: 'Brought together by fate, a woman who seems to have everything and a young man who seems to have nothing decides to give up an ordinary life to be together.',
         plannedDate: null,
         watched: null
+    },
+    {
+        id: 20, title: 'The Fragrant Flower Blooms with Dignity', type: 'series', category: 'Romance', year: 2025, duration: '23m',
+        poster: 'https://m.media-amazon.com/images/M/MV5BY2Q0NTNlMTAtZGVkYS00NDU1LThjYzYtZDQ3M2U5NGJiNzhkXkEyXkFqcGc@._V1_QL75_UX380_CR0,0,380,562_.jpg',
+        banner: 'https://m.media-amazon.com/images/M/MV5BN2M2MWMyYmItZGUyZC00MWQ0LTg4MDctYTdkMmMwYTc4Mjg5XkEyXkFqcGc@._V1_.jpg',
+        description: 'An elite girls school resides next to a boys school for delinquents. One day, two students from each school, Kaoruko and Rintaro, meet and develop a connection.',
+        plannedDate: null,
+        watched: null
     }
 ];
 
