@@ -139,6 +139,14 @@ const seedItems = [
         description: 'When New York editor Margaret faces deportation, she convinces her assistant Andrew to marry her in return for a promotion. However, when she visits his hometown, it changes her in many ways.',
         plannedDate: null,
         watched: null
+    },
+    {
+        id: 19, title: 'Encounter', type: 'series', category: 'Romance', year: 2018, duration: '1h 48m',
+        poster: 'https://m.media-amazon.com/images/M/MV5BMGM0MzNiODgtMWUzNy00MDliLTk5MzgtOGM5NTRjOTBmN2E1XkEyXkFqcGc@._V1_FMjpg_UX800_.jpg',
+        banner: 'https://m.media-amazon.com/images/M/MV5BY2M2NDRhY2YtNjdiZC00OGRlLWFkY2MtYzUxZmM1OTFhMDRhXkEyXkFqcGc@._V1_FMjpg_UX2048_.jpg',
+        description: 'Brought together by fate, a woman who seems to have everything and a young man who seems to have nothing decides to give up an ordinary life to be together.',
+        plannedDate: null,
+        watched: null
     }
 ];
 
