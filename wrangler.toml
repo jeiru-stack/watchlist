@@ -5,9 +5,9 @@
 # Fill in the two placeholders below, then commit + push — Cloudflare Pages
 # will pick this up on the next deploy automatically.
 
-name = "YOUR-PAGES-PROJECT-NAME"
+name = "watchlist"
 pages_build_output_dir = "."
 
 [[kv_namespaces]]
 binding = "LIBRARY_KV"
-id = "mj-library"
+id = "YOUR-KV-NAMESPACE-ID"
