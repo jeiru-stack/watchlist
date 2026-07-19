@@ -5,8 +5,6 @@
 const PLACEHOLDER_POSTER = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450"><rect width="100%" height="100%" fill="#262030"/><text x="50%" y="50%" fill="#a89d9a" font-family="sans-serif" font-size="18" text-anchor="middle" dominant-baseline="middle">No image</text></svg>');
 const PLACEHOLDER_BANNER = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450"><rect width="100%" height="100%" fill="#1c1922"/><text x="50%" y="50%" fill="#a89d9a" font-family="sans-serif" font-size="22" text-anchor="middle" dominant-baseline="middle">No image</text></svg>');
 
-const STORAGE_KEY = 'library:items';
-
 let categoryOrder = defaultCategoryOrder.slice();
 let items = [];
 let currentFilter = 'all';
@@ -16,6 +14,8 @@ let surpriseTimer = null;
 let heroCycleTimer = null;
 let doubleFiveIndex = 0;
 let currentHeroItemId = null;
+let lastFocusedElement = null;
+let currentRatingPerson = localStorage.getItem('mj_person') || 'may';
 
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
@@ -71,25 +71,33 @@ function getDoubleFiveItems() {
 
 async function loadItems() {
     try {
-        if (window.storage) {
-            const result = await window.storage.get(STORAGE_KEY, true);
-            if (result && result.value) {
-                items = JSON.parse(result.value);
+        const res = await fetch('/api/items');
+        if (res.status === 401) {
+            window.location.href = '/login.html';
+            return;
+        }
+        if (res.ok) {
+            const data = await res.json();
+            if (data) {
+                items = data;
                 return;
             }
         }
     } catch (e) {
-        console.warn('No saved library found, using hardcoded defaults.', e);
+        console.warn('Could not reach /api/items, falling back to seed data.', e);
     }
+    // Nothing saved yet (first run) — seed it once so both of you share the same library.
     items = seedItems.map(i => Object.assign({}, i));
     await persistItems();
 }
 
 async function persistItems() {
     try {
-        if (window.storage) {
-            await window.storage.set(STORAGE_KEY, JSON.stringify(items), true);
-        }
+        await fetch('/api/items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items })
+        });
     } catch (e) {
         console.error('Could not save library changes.', e);
     }
@@ -147,7 +155,7 @@ function refreshHero(forcedItem) {
         eyebrow.textContent = 'FROM THE LIBRARY';
     }
     document.getElementById('heroTitle').textContent = item.title;
-    document.getElementById('heroStars').textContent = ratingToStars(avg) || '☆☆☆☆☆';
+    document.getElementById('heroStars').textContent = ratingToStars(avg);
     document.getElementById('heroYear').textContent = item.year;
     document.getElementById('heroDuration').textContent = item.duration;
     document.getElementById('heroDescription').textContent = item.description;
@@ -164,14 +172,21 @@ function refreshHero(forcedItem) {
 
 function startHeroCycling() {
     if (heroCycleTimer) clearInterval(heroCycleTimer);
+    const doubleFive = getDoubleFiveItems();
+    if (doubleFive.length === 1) {
+        // Nothing to cycle to, but still worth spotlighting once.
+        refreshHero(doubleFive[0]);
+        return;
+    }
+    if (doubleFive.length < 2) return; // nothing to cycle between
     heroCycleTimer = setInterval(() => {
-        const doubleFive = getDoubleFiveItems();
-        if (doubleFive.length === 0) {
-            refreshHero();
+        const current = getDoubleFiveItems();
+        if (current.length < 2) {
+            clearInterval(heroCycleTimer);
             return;
         }
-        doubleFiveIndex = (doubleFiveIndex + 1) % doubleFive.length;
-        refreshHero(doubleFive[doubleFiveIndex]);
+        doubleFiveIndex = (doubleFiveIndex + 1) % current.length;
+        refreshHero(current[doubleFiveIndex]);
     }, 10000);
 }
 
@@ -241,12 +256,12 @@ function createCardHTML(item, showBadge) {
         miniRatings = '<div class="mini-ratings"><span class="mini-may">M ' + mayR + '</span><span class="mini-jay">J ' + jayR + '</span></div>';
     }
     return '' +
-        '<div class="card" data-id="' + item.id + '">' +
+        '<div class="card" data-id="' + item.id + '" role="button" tabindex="0" aria-label="' + escapeHtml(item.title) + '">' +
         '<div class="card-poster-wrapper"><img class="card-poster" src="' + escapeHtml(item.poster) + '" alt="' + escapeHtml(item.title) + '" loading="lazy" onerror="this.onerror=null;this.src=PLACEHOLDER_POSTER;"></div>' +
         '<span class="card-type-badge">' + typeLabel + '</span>' +
         '<div class="card-info">' +
         '<div class="card-title">' + escapeHtml(item.title) + '</div>' +
-        '<div class="card-stars">' + (stars || '☆☆☆☆☆') + '</div>' +
+        '<div class="card-stars">' + stars + '</div>' +
         miniRatings +
         '<div class="card-meta"><span>' + item.year + '</span>' + badge + '</div>' +
         '</div>' +
@@ -255,7 +270,7 @@ function createCardHTML(item, showBadge) {
 
 function renderCategoryHTML(categoryName, list, showBadge) {
     const cards = list.map(item => createCardHTML(item, showBadge)).join('');
-    return '<div class="category-section"><div class="category-header"><span class="category-title">' + escapeHtml(categoryName) + '</span></div><div class="category-row">' + cards + '</div></div>';
+    return '<div class="category-section"><div class="category-header"><h2 class="category-title">' + escapeHtml(categoryName) + '</h2></div><div class="category-row">' + cards + '</div></div>';
 }
 
 function emptyState(title, sub) {
@@ -379,28 +394,122 @@ function buildModalBodyHTML(item) {
         plannedDateHtml = '<div class="planned-date-display">📅 ' + escapeHtml(formatPlannedDate(item.plannedDate)) + '</div>';
     }
     return '' +
-        '<h2 class="modal-title">' + escapeHtml(item.title) + '</h2>' +
+        '<h2 class="modal-title" id="modalTitle">' + escapeHtml(item.title) + '</h2>' +
         '<div class="modal-meta">' +
-        '<span class="modal-stars">' + (ratingToStars(avg) || '☆☆☆☆☆') + '</span>' +
+        '<span class="modal-stars">' + ratingToStars(avg) + '</span>' +
         '<span>' + item.year + '</span><span>' + escapeHtml(item.duration) + '</span><span>' + typeLabel + '</span>' +
         '</div>' +
         '<p class="modal-description">' + escapeHtml(item.description) + '</p>' +
         '<div id="syncMeterSlot">' + sync + '</div>' +
         existingRatingsHtml +
-        plannedDateHtml;
+        plannedDateHtml +
+        buildRateFormHTML(item);
+}
+
+function buildRateFormHTML(item) {
+    const existing = item.watched && item.watched[currentRatingPerson];
+    const startRating = existing ? existing.rating : 3;
+    const startComment = existing ? (existing.comment || '') : '';
+    return '' +
+        '<div class="rate-form" id="rateForm">' +
+        '<div class="rate-form-head">Rate it</div>' +
+        '<div class="person-toggle" id="personToggle">' +
+        '<button type="button" class="person-btn person-btn-may' + (currentRatingPerson === 'may' ? ' active' : '') + '" data-person="may">May</button>' +
+        '<button type="button" class="person-btn person-btn-jay' + (currentRatingPerson === 'jay' ? ' active' : '') + '" data-person="jay">Jay</button>' +
+        '</div>' +
+        '<div class="star-row">' +
+        '<input type="range" id="rateRange" min="0.5" max="5" step="0.5" value="' + startRating + '">' +
+        '<span class="star-preview" id="starPreview">' + ratingToStars(startRating) + ' ' + Number(startRating).toFixed(1) + '</span>' +
+        '</div>' +
+        '<textarea id="rateComment" class="rate-comment" placeholder="Add a comment (optional)" maxlength="1000">' + escapeHtml(startComment) + '</textarea>' +
+        '<button type="button" class="btn btn-primary rate-submit-btn" id="rateSubmitBtn">Save rating</button>' +
+        '<div class="rate-status" id="rateStatus"></div>' +
+        '</div>';
+}
+
+function wireRateForm(item) {
+    const toggle = document.getElementById('personToggle');
+    const range = document.getElementById('rateRange');
+    const preview = document.getElementById('starPreview');
+    const comment = document.getElementById('rateComment');
+    const submitBtn = document.getElementById('rateSubmitBtn');
+    const status = document.getElementById('rateStatus');
+    if (!toggle || !range || !submitBtn) return;
+
+    function updatePreview() {
+        const v = Number(range.value);
+        preview.textContent = ratingToStars(v) + ' ' + v.toFixed(1);
+    }
+    function loadPersonValues() {
+        const existing = item.watched && item.watched[currentRatingPerson];
+        range.value = existing ? existing.rating : 3;
+        comment.value = existing ? (existing.comment || '') : '';
+        updatePreview();
+    }
+
+    range.addEventListener('input', updatePreview);
+
+    toggle.querySelectorAll('.person-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentRatingPerson = btn.dataset.person;
+            localStorage.setItem('mj_person', currentRatingPerson);
+            toggle.querySelectorAll('.person-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            status.textContent = '';
+            loadPersonValues();
+        });
+    });
+
+    submitBtn.addEventListener('click', async () => {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving…';
+        status.textContent = '';
+        status.classList.remove('rate-error');
+        try {
+            const res = await fetch('/api/rate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: item.id,
+                    person: currentRatingPerson,
+                    rating: Number(range.value),
+                    comment: comment.value.trim()
+                })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to save.');
+
+            const idx = items.findIndex(i => i.id === item.id);
+            if (idx !== -1) items[idx] = data.item;
+            currentModalItem = data.item;
+
+            document.getElementById('modalBody').innerHTML = buildModalBodyHTML(data.item);
+            wireRateForm(data.item);
+            document.getElementById('rateStatus').textContent = 'Saved!';
+            renderAllCategories();
+        } catch (e) {
+            status.textContent = e.message || 'Something went wrong.';
+            status.classList.add('rate-error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Save rating';
+        }
+    });
 }
 
 function openDetail(id) {
     const item = items.find(i => i.id === id);
     if (!item) return;
     currentModalItem = item;
+    lastFocusedElement = document.activeElement;
     document.getElementById('modalPoster').src = item.banner || item.poster || PLACEHOLDER_BANNER;
     document.getElementById('modalPoster').alt = item.title;
     document.getElementById('modalBody').innerHTML = buildModalBodyHTML(item);
+    wireRateForm(item);
     const overlay = document.getElementById('modalOverlay');
     overlay.classList.add('active');
     document.body.style.overflow = 'hidden';
     document.getElementById('modal').scrollTop = 0;
+    document.querySelector('.modal-close').focus();
 }
 
 function closeModal(e) {
@@ -408,6 +517,8 @@ function closeModal(e) {
     document.getElementById('modalOverlay').classList.remove('active');
     document.body.style.overflow = '';
     currentModalItem = null;
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') lastFocusedElement.focus();
+    lastFocusedElement = null;
 }
 
 function surprisePick() {
@@ -460,10 +571,28 @@ document.addEventListener('keydown', e => {
         if (document.getElementById('modalOverlay').classList.contains('active')) closeModal();
         else if (document.getElementById('surpriseOverlay').classList.contains('active')) closeSurprise({ target: document.getElementById('surpriseOverlay') });
         else if (mobileMenuOpen) closeMobileMenu();
+        return;
     }
     if ((e.key === '/' || (e.ctrlKey && e.key === 'f')) && document.activeElement !== document.getElementById('searchInput')) {
         e.preventDefault();
         document.getElementById('searchInput').focus();
+        return;
+    }
+    // Enter/Space activates cards, nav links, and the logo — anything marked role="button".
+    if (e.key === 'Enter' || e.key === ' ') {
+        const target = e.target.closest('[role="button"]');
+        if (target) { e.preventDefault(); target.click(); }
+        return;
+    }
+    // Keep Tab from leaving the modal while it's open.
+    if (e.key === 'Tab' && document.getElementById('modalOverlay').classList.contains('active')) {
+        const modal = document.getElementById('modal');
+        const focusables = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
 });
 
