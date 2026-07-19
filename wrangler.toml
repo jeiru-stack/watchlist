@@ -1,0 +1,13 @@
+# wrangler.toml
+# Defines the KV binding in code instead of via the dashboard's
+# "Add binding" button (which can be flaky). Commit this at the repo root.
+#
+# Fill in the two placeholders below, then commit + push — Cloudflare Pages
+# will pick this up on the next deploy automatically.
+
+name = "YOUR-PAGES-PROJECT-NAME"
+pages_build_output_dir = "."
+
+[[kv_namespaces]]
+binding = "LIBRARY_KV"
+id = "YOUR-KV-NAMESPACE-ID"
